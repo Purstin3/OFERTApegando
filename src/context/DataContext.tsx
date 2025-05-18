@@ -175,6 +175,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(loading);
   };
 
+   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({
+    offers: false,
+    adCounts: false,
+    sync: false,
+    delete: false
+  });
+
   const syncOffers = async () => {
     setLoading(true);
     try {
@@ -251,3 +259,4 @@ export const useData = (): DataContextType => {
   }
   return context;
 };
+
