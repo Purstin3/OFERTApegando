@@ -5,43 +5,104 @@ import { Input } from '../components/ui/Input';
 import { Grid, List, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import OfferCard from '../components/offers/OfferCard';
 import AddOfferModal from '../components/offers/AddOfferModal';
+import OfferDetailsModal from '../components/offers/OfferDetailsModal';
 import { useData } from '../context/DataContext';
-import { AdPlatform } from '../types';
+import { AdPlatform, Offer } from '../types';
 
 const OffersPage: React.FC = () => {
-  const { offers, adCounts, addOffer, addAdCount } = useData();
+  const { offers, adCounts, timelineEvents, addOffer, addAdCount, updateOffer, deleteOffer } = useData();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [detailsOfferId, setDetailsOfferId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform | 'all'>('all');
   
-  const handleAddOffer = (data: {
+  // Handler para editar oferta
+  const handleEditOffer = (offer: Offer) => {
+    setEditingOffer(offer);
+    setIsAddModalOpen(true);
+  };
+  
+  // Handler para duplicar oferta
+  const handleDuplicateOffer = (offer: Offer) => {
+    const duplicatedOffer = {
+      title: `${offer.title} (Cópia)`,
+      description: offer.description,
+      platform: offer.platform,
+      adLibraryUrl: offer.adLibraryUrl
+    };
+    addOffer(duplicatedOffer);
+  };
+  
+  // Handler para pausar/retomar
+  const handlePauseOffer = (offerId: string) => {
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+      updateOffer({ ...offer, isPaused: true } as any);
+    }
+  };
+  
+  const handleResumeOffer = (offerId: string) => {
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+      updateOffer({ ...offer, isPaused: false } as any);
+    }
+  };
+  
+  // Handler para deletar
+  const handleDeleteOffer = (offerId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta oferta?')) {
+      deleteOffer(offerId);
+    }
+  };
+  
+  // Handler para fechar modal
+  const handleCloseModal = () => {
+    setIsAddModalOpen(false);
+    setEditingOffer(null);
+  };
+  
+  // Handler para salvar (incluindo edição)
+  const handleSaveOffer = (data: {
     title: string;
     description: string;
     platform: AdPlatform;
     adLibraryUrl: string;
     initialCount: number;
   }) => {
-    // Add the offer
-    addOffer({
-      title: data.title,
-      description: data.description,
-      platform: data.platform,
-      adLibraryUrl: data.adLibraryUrl
-    });
-    
-    // If we have initial count data, add it as well
-    if (data.initialCount > 0) {
-      // Get the newly added offer
-      const newOffer = offers[offers.length - 1];
-      
-      addAdCount({
-        offerId: newOffer.id,
-        date: new Date().toISOString(),
-        count: data.initialCount
+    if (editingOffer) {
+      // Editando oferta existente
+      updateOffer({
+        ...editingOffer,
+        title: data.title,
+        description: data.description,
+        platform: data.platform,
+        adLibraryUrl: data.adLibraryUrl,
+        updatedAt: new Date().toISOString()
       });
+    } else {
+      // Adicionando nova oferta
+      addOffer({
+        title: data.title,
+        description: data.description,
+        platform: data.platform,
+        adLibraryUrl: data.adLibraryUrl
+      });
+      
+      // Se tem count inicial, adicionar
+      if (data.initialCount > 0) {
+        const newOffer = offers[offers.length - 1];
+        addAdCount({
+          offerId: newOffer.id,
+          date: new Date().toISOString(),
+          count: data.initialCount
+        });
+      }
     }
+    
+    handleCloseModal();
   };
   
   // Filter offers based on search and platform
@@ -53,10 +114,14 @@ const OffersPage: React.FC = () => {
     return matchesSearch && matchesPlatform;
   });
   
-  // View details handler (would navigate to details page in a real app)
+  // Get details offer data
+  const detailsOffer = detailsOfferId ? offers.find(o => o.id === detailsOfferId) : null;
+  const detailsAdCounts = detailsOfferId ? adCounts.filter(ac => ac.offerId === detailsOfferId) : [];
+  const detailsTimelineEvents = detailsOfferId ? timelineEvents.filter(te => te.offerId === detailsOfferId) : [];
+  
+  // View details handler
   const handleViewDetails = (offerId: string) => {
-    console.log(`View details for offer ${offerId}`);
-    // In a real app, we would navigate to a details page
+    setDetailsOfferId(offerId);
   };
   
   // Platform filter options
@@ -78,15 +143,15 @@ const OffersPage: React.FC = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader 
-          title="Offers" 
-          subtitle="Manage and track your competitors' offers"
+          title="Ofertas" 
+          subtitle="Gerencie e acompanhe as ofertas dos seus concorrentes"
           action={
             <Button 
               variant="primary"
               icon={<Plus size={16} />}
               onClick={() => setIsAddModalOpen(true)}
             >
-              Add Offer
+              Adicionar Oferta
             </Button>
           }
         />
@@ -94,7 +159,7 @@ const OffersPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
             <div className="flex-1 sm:max-w-md">
               <Input
-                placeholder="Search offers..."
+                placeholder="Buscar ofertas..."
                 icon={<Search size={18} />}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -119,7 +184,7 @@ const OffersPage: React.FC = () => {
                 icon={<SlidersHorizontal size={16} />}
                 className="px-2"
               >
-                Filters
+                Filtros
               </Button>
               
               <Button
@@ -149,6 +214,11 @@ const OffersPage: React.FC = () => {
                     offer={offer}
                     adCounts={adCounts.filter(count => count.offerId === offer.id)}
                     onViewDetails={handleViewDetails}
+                    onEdit={handleEditOffer}
+                    onDuplicate={handleDuplicateOffer}
+                    onPause={handlePauseOffer}
+                    onResume={handleResumeOffer}
+                    onDelete={handleDeleteOffer}
                   />
                 ))}
               </div>
@@ -189,7 +259,7 @@ const OffersPage: React.FC = () => {
                           variant="outline"
                           onClick={() => handleViewDetails(offer.id)}
                         >
-                          Details
+                          Detalhes
                         </Button>
                       </div>
                     </div>
@@ -199,13 +269,13 @@ const OffersPage: React.FC = () => {
             )
           ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-gray-500 dark:text-gray-400">No offers found matching your criteria</p>
+              <p className="text-gray-500 dark:text-gray-400">Nenhuma oferta encontrada</p>
               <Button 
                 variant="primary" 
                 className="mt-4"
                 onClick={() => setIsAddModalOpen(true)}
               >
-                Add Your First Offer
+                Adicionar Primeira Oferta
               </Button>
             </div>
           )}
@@ -214,9 +284,23 @@ const OffersPage: React.FC = () => {
       
       <AddOfferModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleAddOffer}
+        onClose={handleCloseModal}
+        onSave={handleSaveOffer}
+        editingOffer={editingOffer}
       />
+      
+      {detailsOffer && (
+        <OfferDetailsModal
+          isOpen={!!detailsOffer}
+          onClose={() => setDetailsOfferId(null)}
+          offer={detailsOffer}
+          adCounts={detailsAdCounts}
+          timelineEvents={detailsTimelineEvents}
+          onEdit={handleEditOffer}
+          onPause={handlePauseOffer}
+          onResume={handleResumeOffer}
+        />
+      )}
     </div>
   );
 };
