@@ -4,7 +4,7 @@ import { useData } from '../../context/DataContext';
 import { useCompetitorAnalysis } from '../../hooks/useCompetitorAnalysis';
 
 const CompetitorAnalysis: React.FC = () => {
-  const { offers, adCounts } = useData();
+  const { offers = [], adCounts = [] } = useData();
   const analysis = useCompetitorAnalysis(offers, adCounts);
 
   return (
@@ -14,7 +14,7 @@ const CompetitorAnalysis: React.FC = () => {
         <CardHeader title="📊 Share de Mercado (Últimos 30 dias)" />
         <CardBody>
           <div className="space-y-4">
-            {analysis.marketShare.slice(0, 5).map(competitor => (
+            {analysis?.marketShare?.slice(0, 5).map(competitor => (
               <div key={competitor.id} className="flex items-center justify-between">
                 <div>
                   <span className="font-medium text-gray-900 dark:text-white">
@@ -34,7 +34,7 @@ const CompetitorAnalysis: React.FC = () => {
                 </div>
               </div>
             ))}
-            {analysis.marketShare.length === 0 && (
+            {(!analysis?.marketShare || analysis.marketShare.length === 0) && (
               <p className="text-center text-gray-500 dark:text-gray-400 py-4">
                 Dados insuficientes para análise
               </p>
@@ -48,7 +48,7 @@ const CompetitorAnalysis: React.FC = () => {
         <CardHeader title="📅 Padrões Sazonais" />
         <CardBody>
           <div className="space-y-3">
-            {analysis.seasonalPatterns.map((pattern, index) => (
+            {analysis?.seasonalPatterns?.map((pattern, index) => (
               <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-900 dark:text-white">
