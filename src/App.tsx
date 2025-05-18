@@ -6,8 +6,6 @@ import DashboardPage from './pages/DashboardPage';
 import OffersPage from './pages/OffersPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import NotesPage from './pages/NotesPage';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/react-query';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -28,7 +26,6 @@ function App() {
   };
 
   return (
-     <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <DataProvider>
         <Layout onPageChange={setCurrentPage} currentPage={currentPage}>
@@ -36,7 +33,6 @@ function App() {
         </Layout>
       </DataProvider>
     </ThemeProvider>
-    </QueryClientProvider>
   );
 }
 

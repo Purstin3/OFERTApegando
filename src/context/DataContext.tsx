@@ -58,12 +58,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [importHistory, setImportHistory] = useState<ImportRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
-  const [loadingStates, setLoadingStates] = useState({
-    offers: false,
-    adCounts: false,
-    sync: false,
-    delete: false
-  });
 
   // Load data from localStorage if available
   useEffect(() => {
