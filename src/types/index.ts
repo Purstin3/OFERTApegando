@@ -54,3 +54,5 @@ export interface DashboardWidget {
 export interface ThemeConfig {
   mode: 'light' | 'dark';
 }
+
+export * from './new-types';
