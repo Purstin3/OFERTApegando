@@ -18,13 +18,19 @@ const OffersPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform | 'all'>('all');
-  
+
+  // Handler para ver detalhes
+  const handleViewDetails = (offerId: string) => {
+    console.log('Clicou em ver detalhes para offer:', offerId);
+    setDetailsOfferId(offerId);
+  };
+
   // Handler para editar oferta
   const handleEditOffer = (offer: Offer) => {
     setEditingOffer(offer);
     setIsAddModalOpen(true);
   };
-  
+
   // Handler para duplicar oferta
   const handleDuplicateOffer = (offer: Offer) => {
     const duplicatedOffer = {
@@ -35,7 +41,7 @@ const OffersPage: React.FC = () => {
     };
     addOffer(duplicatedOffer);
   };
-  
+
   // Handler para pausar/retomar
   const handlePauseOffer = (offerId: string) => {
     const offer = offers.find(o => o.id === offerId);
@@ -43,27 +49,27 @@ const OffersPage: React.FC = () => {
       updateOffer({ ...offer, isPaused: true } as any);
     }
   };
-  
+
   const handleResumeOffer = (offerId: string) => {
     const offer = offers.find(o => o.id === offerId);
     if (offer) {
       updateOffer({ ...offer, isPaused: false } as any);
     }
   };
-  
+
   // Handler para deletar
   const handleDeleteOffer = (offerId: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta oferta?')) {
       deleteOffer(offerId);
     }
   };
-  
+
   // Handler para fechar modal
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
     setEditingOffer(null);
   };
-  
+
   // Handler para salvar (incluindo edição)
   const handleSaveOffer = (data: {
     title: string;
@@ -90,43 +96,38 @@ const OffersPage: React.FC = () => {
         platform: data.platform,
         adLibraryUrl: data.adLibraryUrl
       });
-      
+
       // Se tem count inicial, adicionar
       if (data.initialCount > 0) {
-        const newOffer = offers[offers.length - 1];
+        const newOfferId = Date.now().toString(); // Simular ID
         addAdCount({
-          offerId: newOffer.id,
+          offerId: newOfferId,
           date: new Date().toISOString(),
           count: data.initialCount
         });
       }
     }
-    
+
     handleCloseModal();
   };
-  
+
   // Filter offers based on search and platform
   const filteredOffers = offers.filter(offer => {
     const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           offer.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlatform = selectedPlatform === 'all' || offer.platform === selectedPlatform;
-    
+
     return matchesSearch && matchesPlatform;
   });
-  
+
   // Get details offer data
   const detailsOffer = detailsOfferId ? offers.find(o => o.id === detailsOfferId) : null;
   const detailsAdCounts = detailsOfferId ? adCounts.filter(ac => ac.offerId === detailsOfferId) : [];
   const detailsTimelineEvents = detailsOfferId ? timelineEvents.filter(te => te.offerId === detailsOfferId) : [];
-  
-  // View details handler
-  const handleViewDetails = (offerId: string) => {
-    setDetailsOfferId(offerId);
-  };
-  
+
   // Platform filter options
   const platformOptions = [
-    { value: 'all', label: 'All Platforms' },
+    { value: 'all', label: 'Todas as Plataformas' },
     { value: 'facebook', label: 'Facebook' },
     { value: 'instagram', label: 'Instagram' },
     { value: 'google', label: 'Google' },
@@ -136,9 +137,9 @@ const OffersPage: React.FC = () => {
     { value: 'twitter', label: 'Twitter' },
     { value: 'snapchat', label: 'Snapchat' },
     { value: 'pinterest', label: 'Pinterest' },
-    { value: 'other', label: 'Other' }
+    { value: 'other', label: 'Outros' }
   ];
-  
+
   return (
     <div className="space-y-6">
       <Card>
@@ -165,7 +166,7 @@ const OffersPage: React.FC = () => {
                 onChange={e => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <div className="flex gap-2">
               <select 
                 className="rounded-md border border-gray-300 dark:border-gray-600 px-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -178,7 +179,7 @@ const OffersPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-              
+
               <Button 
                 variant="outline" 
                 icon={<SlidersHorizontal size={16} />}
@@ -186,7 +187,7 @@ const OffersPage: React.FC = () => {
               >
                 Filtros
               </Button>
-              
+
               <Button
                 variant={viewMode === 'grid' ? 'primary' : 'outline'}
                 className="px-2"
@@ -194,7 +195,7 @@ const OffersPage: React.FC = () => {
               >
                 <Grid size={16} />
               </Button>
-              
+
               <Button
                 variant={viewMode === 'list' ? 'primary' : 'outline'}
                 className="px-2"
@@ -204,7 +205,7 @@ const OffersPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          
+
           {filteredOffers.length > 0 ? (
             viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -228,7 +229,7 @@ const OffersPage: React.FC = () => {
                   const latestCount = adCounts
                     .filter(count => count.offerId === offer.id)
                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-                  
+
                   return (
                     <div 
                       key={offer.id} 
@@ -252,7 +253,7 @@ const OffersPage: React.FC = () => {
                       <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:w-32">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">{latestCount?.count || 0}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Active Ads</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Anúncios Ativos</div>
                         </div>
                         <Button
                           size="sm"
@@ -281,24 +282,37 @@ const OffersPage: React.FC = () => {
           )}
         </CardBody>
       </Card>
-      
-      <AddOfferModal
-        isOpen={isAddModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveOffer}
-        editingOffer={editingOffer}
-      />
-      
+
+      {/* Modal de Adicionar/Editar */}
+      {isAddModalOpen && (
+        <AddOfferModal
+          isOpen={isAddModalOpen}
+          onClose={handleCloseModal}
+          onSave={handleSaveOffer}
+          editingOffer={editingOffer}
+        />
+      )}
+
+      {/* Modal de Detalhes */}
       {detailsOffer && (
         <OfferDetailsModal
-          isOpen={!!detailsOffer}
+          isOpen={true}
           onClose={() => setDetailsOfferId(null)}
           offer={detailsOffer}
           adCounts={detailsAdCounts}
           timelineEvents={detailsTimelineEvents}
-          onEdit={handleEditOffer}
-          onPause={handlePauseOffer}
-          onResume={handleResumeOffer}
+          onEdit={(offer) => {
+            setDetailsOfferId(null);
+            handleEditOffer(offer);
+          }}
+          onPause={(offerId) => {
+            handlePauseOffer(offerId);
+            setDetailsOfferId(null);
+          }}
+          onResume={(offerId) => {
+            handleResumeOffer(offerId);
+            setDetailsOfferId(null);
+          }}
         />
       )}
     </div>
