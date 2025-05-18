@@ -7,6 +7,12 @@ import OfferCard from '../components/offers/OfferCard';
 import AddOfferModal from '../components/offers/AddOfferModal';
 import { useData } from '../context/DataContext';
 import { AdPlatform } from '../types';
+import { Grid, List, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import OfferCard from '../components/offers/OfferCard';
+import AddOfferModal from '../components/offers/AddOfferModal';
+import { Loading, SkeletonCard } from '../components/ui/Loading';
+import { useData } from '../context/DataContext';
+import { AdPlatform } from '../types';
 
 const OffersPage: React.FC = () => {
   const { offers, adCounts, addOffer, addAdCount } = useData();
