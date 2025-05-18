@@ -10,6 +10,18 @@ interface OfferCardProps {
   adCounts: AdCount[];
   onViewDetails: (offerId: string) => void;
 }
+// Adicionar handlers reais:
+const handlePause = (offerId: string) => {
+  // Lógica para pausar monitoring
+};
+
+const handleEdit = (offerId: string) => {
+  // Abrir modal de edição
+};
+
+const handleDuplicate = (offerId: string) => {
+  // Duplicar oferta
+};
 
 const OfferCard: React.FC<OfferCardProps> = ({ offer, adCounts, onViewDetails }) => {
   // Get the most recent ad count
