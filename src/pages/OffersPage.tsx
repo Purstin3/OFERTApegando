@@ -5,7 +5,6 @@ import { Input } from '../components/ui/Input';
 import { Grid, List, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import OfferCard from '../components/offers/OfferCard';
 import AddOfferModal from '../components/offers/AddOfferModal';
-import { Loading, SkeletonCard } from '../components/ui/Loading';
 import { useData } from '../context/DataContext';
 import { AdPlatform } from '../types';
 

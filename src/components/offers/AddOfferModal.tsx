@@ -14,9 +14,7 @@ interface AddOfferModalProps {
     adLibraryUrl: string;
     initialCount: number;
   }) => void;
-  editingOffer?: Offer | null;
 }
-
 
 const AddOfferModal: React.FC<AddOfferModalProps> = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({

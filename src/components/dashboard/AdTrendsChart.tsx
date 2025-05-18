@@ -1,14 +1,13 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { useData } from '../../context/DataContext';
 
 const AdTrendsChart: React.FC = () => {
   const { offers, adCounts } = useData();
   
-  // Processar dados para o gráfico
+  // Process data for chart
   const processChartData = () => {
-    // Últimos 7 dias
+    // Get last 7 days
     const dates = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
@@ -16,83 +15,98 @@ const AdTrendsChart: React.FC = () => {
       dates.push(date.toISOString().split('T')[0]);
     }
     
-    // Preparar dados por dia
-    const chartData = dates.map(date => {
-      const dayData: any = { date: new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) };
+    // Prepare series data for each offer
+    const series = offers.map(offer => {
+      const offerCounts = adCounts.filter(count => count.offerId === offer.id);
       
-      // Para cada oferta, encontrar o count desse dia
-      offers.forEach(offer => {
-        const dayCount = adCounts.find(count => 
-          count.offerId === offer.id && 
+      const dataPoints = dates.map(date => {
+        const matchingCount = offerCounts.find(count => 
           new Date(count.date).toISOString().split('T')[0] === date
         );
-        
-        dayData[offer.title] = dayCount ? dayCount.count : 0;
+        return matchingCount ? matchingCount.count : null;
       });
       
-      return dayData;
+      return {
+        name: offer.title,
+        data: dataPoints
+      };
     });
     
-    return chartData;
+    return { dates, series };
   };
   
-  const chartData = processChartData();
+  const { dates, series } = processChartData();
   
-  // Cores para as linhas
-  const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#EC4899', '#14B8A6'];
+  // IMPORTANT: In a real app, we would use a charting library like Chart.js or Recharts
+  // For this mock-up, we'll create a simple visualization
+  
+  // Find max value for scaling
+  const maxValue = Math.max(...series.flatMap(s => s.data.filter(v => v !== null) as number[]));
+  
+  // Generate random colors for demo
+  const generateColor = (index: number) => {
+    const colors = [
+      'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-yellow-500',
+      'bg-red-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
+    ];
+    return colors[index % colors.length];
+  };
   
   return (
     <Card className="col-span-2">
       <CardHeader 
-        title="Tendência de Anúncios" 
-        subtitle="Anúncios ativos nos últimos 7 dias" 
+        title="Ad Trends" 
+        subtitle="Active ads over the last 7 days" 
       />
       <CardBody>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="date" 
-                className="text-xs"
-                tick={{ fill: 'currentColor' }}
-              />
-              <YAxis 
-                className="text-xs"
-                tick={{ fill: 'currentColor' }}
-              />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'var(--bg-color)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Legend />
-              {offers.map((offer, index) => (
-                <Line
-                  key={offer.id}
-                  type="monotone"
-                  dataKey={offer.title}
-                  stroke={colors[index % colors.length]}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
+        {/* Simple chart visualization */}
+        <div className="mt-4 h-64">
+          <div className="flex h-full">
+            {/* Y-axis labels */}
+            <div className="flex flex-col justify-between text-xs text-gray-500 pr-2">
+              <span>{maxValue}</span>
+              <span>{Math.round(maxValue * 0.75)}</span>
+              <span>{Math.round(maxValue * 0.5)}</span>
+              <span>{Math.round(maxValue * 0.25)}</span>
+              <span>0</span>
+            </div>
+            
+            {/* Chart bars */}
+            <div className="flex-1 flex">
+              {dates.map((date, dateIndex) => (
+                <div key={date} className="flex-1 flex flex-col justify-end space-y-1 px-1">
+                  {series.map((serie, serieIndex) => {
+                    const value = serie.data[dateIndex];
+                    if (value === null) return null;
+                    
+                    const heightPercentage = (value / maxValue) * 100;
+                    return (
+                      <div
+                        key={serieIndex}
+                        className={`${generateColor(serieIndex)} rounded-t opacity-80`}
+                        style={{ height: `${heightPercentage}%` }}
+                        title={`${serie.name}: ${value} ads on ${date}`}
+                      ></div>
+                    );
+                  })}
+                  <span className="text-xs text-center text-gray-500">
+                    {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
               ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        
-        {offers.length === 0 && (
-          <div className="flex items-center justify-center h-80 text-gray-500 dark:text-gray-400">
-            <div className="text-center">
-              <p className="mb-2">Nenhuma oferta para exibir</p>
-              <p className="text-sm">Adicione algumas ofertas para ver as tendências</p>
             </div>
           </div>
-        )}
+        </div>
+        
+        {/* Legend */}
+        <div className="mt-4 flex flex-wrap gap-4">
+          {series.map((serie, index) => (
+            <div key={index} className="flex items-center">
+              <div className={`w-3 h-3 rounded ${generateColor(index)}`}></div>
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{serie.name}</span>
+            </div>
+          ))}
+        </div>
       </CardBody>
     </Card>
   );
