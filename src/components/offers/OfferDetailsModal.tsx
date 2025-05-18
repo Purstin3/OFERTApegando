@@ -332,7 +332,7 @@ const OfferDetailsModal: React.FC<OfferDetailsModalProps> = ({
                       <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         URL da Biblioteca de Anúncios
                       </label>
-                      
+                      <a
                         href={offer.adLibraryUrl}
                         target="_blank"
                         rel="noopener noreferrer"
