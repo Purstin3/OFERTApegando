@@ -28,6 +28,7 @@ function App() {
   };
 
   return (
+     <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <DataProvider>
         <Layout onPageChange={setCurrentPage} currentPage={currentPage}>
@@ -35,6 +36,7 @@ function App() {
         </Layout>
       </DataProvider>
     </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
