@@ -4,6 +4,7 @@ import { DataProvider } from './context/DataContext';
 import Layout from './components/layout/Layout';
 import DashboardPage from './pages/DashboardPage';
 import OffersPage from './pages/OffersPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import NotesPage from './pages/NotesPage';
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
         return <DashboardPage />;
       case 'offers':
         return <OffersPage />;
+      case 'analytics':
+        return <AnalyticsPage />;
       case 'notes':
         return <NotesPage />;
       default:
@@ -25,7 +28,7 @@ function App() {
   return (
     <ThemeProvider>
       <DataProvider>
-        <Layout>
+        <Layout onPageChange={setCurrentPage} currentPage={currentPage}>
           {renderPage()}
         </Layout>
       </DataProvider>
