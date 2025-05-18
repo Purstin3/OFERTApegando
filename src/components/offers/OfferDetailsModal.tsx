@@ -469,3 +469,22 @@ const OfferDetailsModal: React.FC<OfferDetailsModalProps> = ({
                           </p>
                         </div>
                       </div>
+                    );
+                  })}
+                  
+                  {offerEvents.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      Nenhum evento registrado para esta oferta
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OfferDetailsModal;
