@@ -6,6 +6,7 @@ export interface Offer {
   adLibraryUrl: string;
   createdAt: string;
   updatedAt: string;
+  isPaused?: boolean;
 }
 
 export interface AdCount {
